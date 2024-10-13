@@ -28,6 +28,17 @@ with
       select
         stg_customers.id
         , stg_customers.first_name
+        , stg_customers.last_name
+        , country_codes.name as country_name
+        , stg_customers.last_updated_dt
+        , stg_customers.dbt_valid_from
+        , stg_customers.dbt_valid_to
+      from stg_customers
+      left join country_codes
+          on stg_customers.country_code = country_codes.code
+    )
+
+select * from joined
 
 
 
