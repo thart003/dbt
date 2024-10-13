@@ -16,7 +16,7 @@ with
     )
 
     select * from staging
-    where row_num = 1
+    where dbt_valid_to is null
     
 
 
