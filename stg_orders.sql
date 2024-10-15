@@ -1,5 +1,9 @@
 {{
-
+  config(
+    materialized='incremental'
+    , incremental_strategy='merge'
+    , unique_key='id'
+  )
 }}
 
 with
@@ -15,5 +19,9 @@ with
 
   select *
   from staging
+  {% if is_incremental() &}
+    where last_updated_dt > (select * from max(last_updated_dt) from {{this}})
+  {% endif %}
 
+  
 
