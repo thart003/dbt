@@ -25,7 +25,49 @@ default_args = {
   default_args=default_args,
 )
 def jaffle_shop_dbt_dag():
-  
+  pre_dbt_workflow = EmptyOperator(task_id="pre_dbt_workflow")
+
+  # DBT
+  dbt_deps = BashOperator(
+      task_id = 'dbt_deps',
+      bash_operand=f'{ENTRYPOINT_CMD} && dbt deps',
+      env={"PATH_TO_DBT_VENV": PATH_TO_DBT_VENV},
+      cwd=PATH_TO_DBT_PROJECT,
+  )
+
+dbt_run_models = BashOperator(
+    task_id='dbt_run_models',
+    bash_command=f'{ENTRYPOINT_CMD} && dbt run --models .',
+    env={"PATH_TO_DBT_VENV": PATH_TO_DBT_VENV},
+    cwd=PATH_TO_DBT_PROJECT,
+)
+
+dbt_run_stg_customers = BashOperator(
+    task_id='dbt_run_stg_orders',
+    bash_command=f'{ENTRYPOINT_CMD} && dbt run -s stg_orders',
+    env={"PATH_TO_DBT_VENV": PATH_TO_DBT_VENV},
+    cwd=PATH_TO_DBT_PROJECT,
+)
+
+dbt_run_stg_orders = BashOperator(
+    task_id='dbt_run_stg_orders',
+    bash_command=f'{ENTRYPOINT_CMD} && dbt run -s stg_orders',
+    env="PATH_TO_DBT_VENV": PATH_TO_DBT_VENV},
+    cwd=PATH_TO_DBT_PROJECT,
+)
+
+dbt_run_stg_payments = BashOperator(
+    task_id='dbt_run_stg_payments',
+    bash_command=f'{ENTRYPOINT_CMD} && dbt run -s stg_payments,
+    env={"PATH_TO_DBT_VENV": PATH_TO_DBT_VENV},
+    cwd=PATH_TO_DBT_PROJECT,
+    )
+
+
+
+
+
+
 
 
 
