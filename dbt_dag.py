@@ -35,16 +35,9 @@ def jaffle_shop_dbt_dag():
       cwd=PATH_TO_DBT_PROJECT,
   )
 
-dbt_run_models = BashOperator(
+dbt_run_snapshot_customers = BashOperator(
     task_id='dbt_run_models',
-    bash_command=f'{ENTRYPOINT_CMD} && dbt run --models .',
-    env={"PATH_TO_DBT_VENV": PATH_TO_DBT_VENV},
-    cwd=PATH_TO_DBT_PROJECT,
-)
-
-dbt_run_stg_customers = BashOperator(
-    task_id='dbt_run_stg_orders',
-    bash_command=f'{ENTRYPOINT_CMD} && dbt run -s stg_orders',
+    bash_command=f'{ENTRYPOINT_CMD} && dbt snapshot -s stg_customers .',
     env={"PATH_TO_DBT_VENV": PATH_TO_DBT_VENV},
     cwd=PATH_TO_DBT_PROJECT,
 )
@@ -56,14 +49,39 @@ dbt_run_stg_orders = BashOperator(
     cwd=PATH_TO_DBT_PROJECT,
 )
 
-dbt_run_stg_payments = BashOperator(
-    task_id='dbt_run_stg_payments',
-    bash_command=f'{ENTRYPOINT_CMD} && dbt run -s stg_payments,
+  write = BashOperator(
+    task_id='write',
+    bash_command=f'{ENTRYPOINT_CMD} && dbt run -s audit_dim_customers',
+    env={"PATH_TO_DBT_VENV": PATH_TO_DBT_VENV},
+    cwd=PATH_TO_DBT_PROJECT,
+  )
+
+audit = BashOperator(
+    task_id='audit',
+    bash_command=f'{ENTRYPOINT_CMD} && dbt test -s audit_dim_customers',
+    env={"PATH_TO_DBT_VENV": PATH_TO_DBT_VENV},
+    cwd=PATH_TO_DBT_PROJECT,
+)
+
+publish = BashOperator(
+    task_id='publish',
+    bash_command=f'{ENTRYPOINT_CMD} && dbt run -s dim_customers,
     env={"PATH_TO_DBT_VENV": PATH_TO_DBT_VENV},
     cwd=PATH_TO_DBT_PROJECT,
     )
 
+# Post DBT Workflow tasks
+post_dbt_workflow = EmptyOperator(task_id="post_dbt_workflow")
 
+# Define task dependencies
+(
+  pre_dbt_workflow \
+  >> dbt_deps \
+    >> dbt_run_models \
+      >> [dbt_run_stg_customers, dbt_run_stg_orders, dbt_run_stg_payments]
+        >> post_dbt_workflow
+
+jaffle_shop_dbt_dag()
 
 
 
