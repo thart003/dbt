@@ -42,4 +42,6 @@ with
 
   )
 
-select * from renamed
+select * 
+from staging
+where dbt_valid_to is null
