@@ -6,4 +6,4 @@
   )
 }}
 
-select * from joined
+select * from {{ ref('audit_dim_customers') }}
